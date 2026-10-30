@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Alertas Modales</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <h1 class="text-3xl font-bold mb-6">Prueba de Alertas Modales</h1>
+
+    <div class="space-y-4">
+        <button onclick="testSuccessAlert()" class="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600">
+            Probar Alerta Éxito
+        </button>
+        <button onclick="testErrorAlert()" class="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600">
+            Probar Alerta Error
+        </button>
+        <button onclick="testApprovalFlow()" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600">
+            Simular Aprobación de Usuario
+        </button>
+        <button onclick="testPasswordResetFlow()" class="bg-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-600">
+            Simular Cambio de Contraseña
+        </button>
+    </div>
+
+    <script>
+        // Módulo de Alertas 
+        const AlertModule = {
+            defaultDuration: 3000,
+
+            show: function(message, type) {
+                if (!type) type = 'success';
+                const box = document.createElement('div');
+                const color = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+                box.className = 'fixed top-4 right-4 ' + color + ' text-white px-6 py-3 rounded-lg shadow-lg z-40';
+                box.textContent = message;
+                document.body.appendChild(box);
+                setTimeout(() => box.remove(), this.defaultDuration);
+            },
+
+            // Alerta modal grande estilo confirmación
+            showModal: function(title, message, type, onConfirm) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+
+                const iconColor = type === 'success' ? '#00A8B5' : type === 'error' ? '#EF4444' : '#3B82F6';
+                const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+                const buttonColor = type === 'success' ? 'bg-[#00A8B5] hover:bg-[#008A97]' : type === 'error' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700';
+
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl text-center">
+                        <div class="flex justify-center mb-4">
+                            <div class="w-16 h-16 rounded-full flex items-center justify-center" style="background-color: ${iconColor};">
+                                <span class="text-white text-3xl font-bold">${icon}</span>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">${title}</h2>
+                        <p class="text-gray-600 mb-6">${message}</p>
+                        <button onclick="this.closest('.fixed').remove(); ${onConfirm || ''}" class="w-full ${buttonColor} text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                            ENTENDIDO
+                        </button>
+                    </div>
+                `;
+
+                document.body.appendChild(modal);
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) this.remove();
+                });
+            }
+        };
+
+        // PRUEBAS
+        function testSuccessAlert() {
+            AlertModule.showModal(
+                '¡Éxito!',
+                'Esta es una alerta de éxito con el color turquesa del programa.',
+                'success'
+            );
+        }
+
+        function testErrorAlert() {
+            AlertModule.showModal(
+                '¡Error!',
+                'Esta es una alerta de error con color rojo.',
+                'error'
+            );
+        }
+
+        function testApprovalFlow() {
+            if (confirm('¿Aprobar la solicitud de Miguel Angel?')) {
+                AlertModule.showModal(
+                    '¡Solicitud aprobada!',
+                    'La cuenta de Miguel Angel ha sido aprobada como Empleado. El usuario podrá acceder al sistema ahora.',
+                    'success',
+                    'console.log("Callback ejecutado")'
+                );
+            }
+        }
+
+        function testPasswordResetFlow() {
+            const status = confirm('¿Aprobar el cambio de contraseña?') ? 'approved' : 'rejected';
+
+            if (status === 'approved') {
+                AlertModule.showModal(
+                    '¡Cambio aprobado!',
+                    'El usuario podrá acceder con su nueva contraseña.',
+                    'success'
+                );
+            } else {
+                AlertModule.showModal(
+                    '¡Cambio rechazado!',
+                    'La solicitud de cambio de contraseña ha sido rechazada.',
+                    'error'
+                );
+            }
+        }
+
+        // Mensaje de bienvenida
+        window.addEventListener('load', function() {
+            console.log('✅ AlertModule cargado correctamente');
+            console.log('Prueba: Las alertas DEBEN aparecer cuando hagas clic en los botones');
+        });
+    </script>
+</body>
+</html>

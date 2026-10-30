@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Empleado | Frutos y Semillas</title>
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- TAILWIND CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00A8B5',
+                        'primary-light': '#20C4D1',
+                        'primary-dark': '#008C95',
+                        accent: '#8B6F47',
+                        'accent-light': '#A0826D',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        pulse2: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.5' },
+                        }
+                    },
+                    animation: {
+                        fadeIn: 'fadeIn 0.4s ease-out',
+                        slideIn: 'slideIn 0.4s ease-out',
+                        pulse2: 'pulse2 2s infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .content-section {
+            animation: fadeIn 0.4s ease-out;
+        }
+        .alert-toast {
+            animation: slideIn 0.4s ease-out;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .active {
+            display: block;
+        }
+        /* Pestañas del sidebar: color de la empresa al pasar el cursor */
+        #sidebar .menu-item:hover {
+            background-color: #00A8B5;
+        }
+        #sidebar .menu-item:hover span {
+            color: #fff;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- HEADER -->
+    <div class="bg-gradient-to-r from-[#00A8B5] to-[#20C4D1] px-8 py-6 shadow-md border-b-4 border-[#008C95]">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-6">
+                <button onclick="toggleSidebar()" class="text-white hover:bg-[#00A8B5] p-2 rounded-lg transition-all text-2xl">
+                    <i class="bi bi-list"></i>
+                </button>
+                <img src="../Images/logo.png" alt="Frutos y Semillas" class="h-12 w-auto">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Frutos y Semillas</h1>
+                    <p class="text-white text-sm opacity-90">Panel de Empleado</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="text-right text-white">
+                    <p class="font-semibold text-base" id="userName">Miguel Angel Osorio</p>
+                    <p class="text-sm opacity-90" id="userRole">Empleado</p>
+                </div>
+                <div id="userAvatar" class="w-12 h-12 rounded-full bg-[#2A9D8F] text-white flex items-center justify-center font-bold text-lg shadow-md border-4 border-white">MA</div>
+                <button onclick="logout()" class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all duration-300 hover:-translate-y-0.5 shadow-sm">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTAINER -->
+    <div class="flex h-screen bg-gray-100" style="height: calc(100vh - 90px);">
+        <!-- SIDEBAR -->
+        <div id="sidebar" class="w-64 bg-white border-r-2 border-gray-200 overflow-y-auto shadow-sm transition-all duration-300">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200 lg:hidden">
+                <span class="text-sm font-semibold text-gray-700">Menú</span>
+                <button onclick="toggleSidebar()" class="text-gray-600 hover:text-gray-800">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
+            </div>
+            <div class="p-0">
+                <!-- Dashboard -->
+                <div class="menu-item active p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-[#00A8B5]" onclick="switchSection('dashboard', this)">
+                    <span class="text-2xl"><i class="bi bi-bar-chart-line"></i></span>
+                    <span class="font-medium text-gray-700">Dashboard</span>
+                </div>
+
+                <!-- Solicitar Permisos -->
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5]" onclick="switchSection('permisos', this)">
+                    <span class="text-2xl"><i class="bi bi-calendar-check"></i></span>
+                    <span class="font-medium text-gray-600">Solicitar Permisos</span>
+                </div>
+
+                <!-- Directorio -->
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5]" onclick="switchSection('directorio', this)">
+                    <span class="text-2xl"><i class="bi bi-person-lines-fill"></i></span>
+                    <span class="font-medium text-gray-600">Directorio</span>
+                </div>
+
+                <!-- Anuncios -->
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5]" onclick="switchSection('anuncios', this)">
+                    <span class="text-2xl"><i class="bi bi-megaphone"></i></span>
+                    <span class="font-medium text-gray-600">Anuncios</span>
+                </div>
+
+                <!-- Formularios -->
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5]" onclick="switchSection('formularios', this)">
+                    <span class="text-2xl"><i class="bi bi-clipboard2-check"></i></span>
+                    <span class="font-medium text-gray-600">Formularios</span>
+                </div>
+
+                <!-- Crear Ticket -->
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5]" onclick="switchSection('tickets', this)">
+                    <span class="text-2xl"><i class="bi bi-ticket"></i></span>
+                    <span class="font-medium text-gray-600">Crear Ticket</span>
+                </div>
+
+                <!-- Calendario -->
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5]" onclick="switchSection('calendario', this)">
+                    <span class="text-2xl"><i class="bi bi-calendar3"></i></span>
+                    <span class="font-medium text-gray-600">Calendario</span>
+                </div>
+
+                <!-- Mis Tareas -->
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5]" onclick="switchSection('tareas', this)">
+                    <span class="text-2xl"><i class="bi bi-check-square"></i></span>
+                    <span class="font-medium text-gray-600">Mis Tareas</span>
+                </div>
+
+                <!-- Mi Perfil -->
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5]" onclick="switchSection('perfil', this)">
+                    <span class="text-2xl"><i class="bi bi-file-person"></i></span>
+                    <span class="font-medium text-gray-600">Mi Perfil</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="flex-1 overflow-y-auto">
+            <!-- DASHBOARD SECTION -->
+            <section id="dashboard" class="content-section active p-8 bg-white m-4 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Bienvenido, <span id="welcomeName">Miguel Angel</span></h2>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="card-hover bg-gradient-to-br from-primary-light to-primary p-6 rounded-lg text-white shadow-md">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-sm opacity-90 font-semibold">Tareas Asignadas</p>
+                                <p class="text-4xl font-bold mt-2" id="tasksCount">5</p>
+                            </div>
+                            <i class="bi bi-check-square text-4xl opacity-50"></i>
+                        </div>
+                        <p class="text-xs opacity-75">2 vencen esta semana</p>
+                    </div>
+
+                    <div class="card-hover bg-gradient-to-br from-yellow-400 to-yellow-500 p-6 rounded-lg text-white shadow-md">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-sm opacity-90 font-semibold">Permisos Pendientes</p>
+                                <p class="text-4xl font-bold mt-2" id="pendingPermissions">1</p>
+                            </div>
+                            <i class="bi bi-calendar-check text-4xl opacity-50"></i>
+                        </div>
+                        <p class="text-xs opacity-75">Esperando aprobación</p>
+                    </div>
+
+                    <div class="card-hover bg-gradient-to-br from-blue-400 to-blue-500 p-6 rounded-lg text-white shadow-md">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-sm opacity-90 font-semibold">Mis Tickets</p>
+                                <p class="text-4xl font-bold mt-2" id="ticketsCount">2</p>
+                            </div>
+                            <i class="bi bi-ticket-perforated text-4xl opacity-50"></i>
+                        </div>
+                        <p class="text-xs opacity-75">Última actualización hace 2 horas</p>
+                    </div>
+
+                    <div class="card-hover bg-gradient-to-br from-green-400 to-green-500 p-6 rounded-lg text-white shadow-md">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-sm opacity-90 font-semibold">Anuncios Nuevos</p>
+                                <p class="text-4xl font-bold mt-2" id="announcementsCount">3</p>
+                            </div>
+                            <i class="bi bi-megaphone text-4xl opacity-50"></i>
+                        </div>
+                        <p class="text-xs opacity-75">No leídos</p>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Tareas Recientes</h3>
+                        <div id="recentTasks" class="space-y-3">
+                            <div class="flex justify-between items-start pb-3 border-b border-gray-200">
+                                <div>
+                                    <p class="font-semibold text-gray-800">Revisar reportes de ventas</p>
+                                    <p class="text-sm text-gray-600">Vence: 10 Oct 2026</p>
+                                </div>
+                                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Pendiente</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Anuncios Recientes</h3>
+                        <div id="recentAnnouncements" class="space-y-3">
+                            <div class="flex justify-between items-start pb-3 border-b border-gray-200">
+                                <div>
+                                    <p class="font-semibold text-gray-800">Mantenimiento de sistemas</p>
+                                    <p class="text-sm text-gray-600">06 Oct 2026</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SOLICITAR PERMISOS SECTION -->
+            <section id="permisos" class="content-section hidden p-8 bg-white m-4 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Solicitar Permisos</h2>
+
+                <form class="bg-gray-50 p-6 rounded-lg shadow-sm max-w-2xl" onsubmit="RequestsModule.submitPermissionRequest(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Tipo de Permiso *</label>
+                        <select class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" id="permissionType" required>
+                            <option value="">Selecciona tipo de permiso</option>
+                            <option value="vacaciones">Vacaciones</option>
+                            <option value="permiso_personal">Permiso Personal</option>
+                            <option value="licencia_medica">Licencia Médica</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Fecha Inicio *</label>
+                            <input type="date" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" id="permissionStart" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Fecha Fin *</label>
+                            <input type="date" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" id="permissionEnd" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Motivo o Descripción *</label>
+                        <textarea class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" id="permissionReason" rows="4" required placeholder="Describe el motivo de tu solicitud..."></textarea>
+                    </div>
+
+                    <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-dark transition-all">
+                        <i class="bi bi-send"></i> Enviar Solicitud
+                    </button>
+                </form>
+
+                <div class="mt-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Historial de Solicitudes</h3>
+
+                    <div class="mb-4 flex gap-2 flex-wrap">
+                        <button onclick="loadPermissionHistory('todas')" class="px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-dark transition-all">Todas</button>
+                        <button onclick="loadPermissionHistory('pending')" class="px-4 py-2 rounded-lg bg-gray-300 text-gray-700 font-semibold hover:bg-gray-400 transition-all">Pendientes</button>
+                        <button onclick="loadPermissionHistory('approved')" class="px-4 py-2 rounded-lg bg-gray-300 text-gray-700 font-semibold hover:bg-gray-400 transition-all">Aprobadas</button>
+                        <button onclick="loadPermissionHistory('rejected')" class="px-4 py-2 rounded-lg bg-gray-300 text-gray-700 font-semibold hover:bg-gray-400 transition-all">Rechazadas</button>
+                    </div>
+
+                    <div id="permissionHistory" class="space-y-3">
+                        <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-gray-300 text-center text-gray-600">
+                            <p>No hay solicitudes aún. ¡Crea una nueva solicitud!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!--MODAL PARA SOLICITAR EL PERMISO PERSONALIZADO-->
+            <div class="alert-modal custom-permission-modal" id="customPermissionModal" style="display: none;">
+                <div class="alert-modal-card">
+                    <div class="alert-modal-icon" style="background-color: #00A8B5;">
+                        <span class="text-white text-3x1 font-bold">?</span>
+                    </div>
+                    <h2>Tipo de Permiso Personalizado</h2>
+                    <p>¿Qué tipo de permiso deseas solicitar?</p>
+                    <input type="text" id="customPermissionInput" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none mt-4 mb-4" placeholder="Ej: Permiso para capacitación, Permiso administrativo..." maxlength="50">
+                    <div class="flex gap-3 mt-6">
+                        <button onclick="closeCustomPermissionModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold">Cancelar</button>
+                        <button onclick="confirmCustomPermission()" class="flex-1 bg-[#00A8B5] hover:bg-[#20C4D1] text-white px-4 py-2 rounded-lg font-semibold">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+            <!-- DIRECTORIO SECTION -->
+            <section id="directorio" class="content-section hidden p-8 bg-white m-4 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Directorio de Empleados</h2>
+
+                <div class="mb-4">
+                    <input type="text" placeholder="Buscar por nombre o departamento..." class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" id="directorySearch" onkeyup="NavigationModule.filterDirectory(this.value)">
+                </div>
+
+                <div id="directoryList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="font-semibold text-gray-800">Miguel Angel Osorio</p>
+                                <p class="text-sm text-gray-600">Sistemas</p>
+                                <p class="text-xs text-gray-500 mt-2">practicantefsy@frutosysemillas.com</p>
+                            </div>
+                            <i class="bi bi-person-circle text-2xl text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ANUNCIOS SECTION -->
+            <section id="anuncios" class="content-section hidden p-8 bg-white m-4 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Anuncios</h2>
+
+                <div id="announcementsList" class="space-y-4">
+                    <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border-l-4 border-blue-500 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-bold text-gray-800 text-lg">Mantenimiento de Sistemas</p>
+                                <p class="text-gray-600 mt-2">Se realizará mantenimiento el sábado 7 de octubre de 8 PM a 12 PM.</p>
+                                <p class="text-xs text-gray-500 mt-3">06 Oct 2026 - 10:30 AM</p>
+                            </div>
+                            <span class="text-xs bg-blue-200 text-blue-800 px-3 py-1 rounded">Importante</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FORMULARIOS SECTION -->
+            <section id="formularios" class="content-section hidden p-8 bg-white m-4 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Formularios Disponibles</h2>
+
+                <div id="formsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-all">
+                        <i class="bi bi-file-text text-3xl text-primary mb-3"></i>
+                        <p class="font-semibold text-gray-800">Formulario de Cambio de Datos</p>
+                        <p class="text-sm text-gray-600 mt-2">Solicita cambios en tus datos personales</p>
+                        <button onclick="RequestsModule.openForm('cambio-datos')" class="mt-4 text-primary font-semibold hover:text-primary-dark">
+                            Abrir <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-all">
+                        <i class="bi bi-file-text text-3xl text-primary mb-3"></i>
+                        <p class="font-semibold text-gray-800">Reporte de Incidente</p>
+                        <p class="text-sm text-gray-600 mt-2">Reporta un incidente en el lugar de trabajo</p>
+                        <button onclick="RequestsModule.openForm('incidente')" class="mt-4 text-primary font-semibold hover:text-primary-dark">
+                            Abrir <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CREAR TICKET SECTION -->
+            <section id="tickets" class="content-section hidden p-8 bg-white m-4 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Crear Ticket de Soporte</h2>
+
+                <form class="bg-gray-50 p-6 rounded-lg shadow-sm max-w-2xl" onsubmit="RequestsModule.submitTicket(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Categoría *</label>
+                        <select class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" id="ticketCategory" required>
+                            <option value="">Selecciona una categoría</option>
+                            <option value="tecnico">Soporte Técnico</option>
+                            <option value="rrhh">Recursos Humanos</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Asunto *</label>
+                        <input type="text" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" id="ticketSubject" placeholder="Describe brevemente tu problema..." required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Descripción *</label>
+                        <textarea class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" id="ticketDescription" rows="5" placeholder="Describe el problema en detalle..." required></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Prioridad</label>
+                        <select class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" id="ticketPriority">
+                            <option value="baja">Baja</option>
+                            <option value="media" selected>Media</option>
+                            <option value="alta">Alta</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-dark transition-all">
+                        <i class="bi bi-plus-circle"></i> Crear Ticket
+                    </button>
+                </form>
+
+                <div class="mt-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Mis Tickets</h3>
+                    <div id="myTickets" class="space-y-3">
+                        <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-green-500">
+                            <p class="font-semibold text-gray-800">#001 - Acceso a carpeta compartida</p>
+                            <p class="text-sm text-gray-600">Categoría: Soporte Técnico | Estado: <span class="text-green-600 font-semibold">Resuelto</span></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CALENDARIO SECTION -->
+            <section id="calendario" class="content-section hidden p-8 bg-white m-4 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Calendario de Eventos</h2>
+
+                <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-gray-600 mb-4">Calendario de eventos y fechas importantes de la empresa</p>
+                    <div id="calendarEvents" class="space-y-3">
+                        <div class="bg-white p-4 rounded-lg border-l-4 border-primary">
+                            <p class="font-semibold text-gray-800">Reunión de Departamento</p>
+                            <p class="text-sm text-gray-600">10 Oct 2026 - 14:00</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border-l-4 border-yellow-500">
+                            <p class="font-semibold text-gray-800">Día de Receso</p>
+                            <p class="text-sm text-gray-600">12 Oct 2026 (Todo el día)</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MIS TAREAS SECTION -->
+            <section id="tareas" class="content-section hidden p-8 bg-white m-4 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Mis Tareas</h2>
+
+                <div class="mb-4 flex gap-2">
+                    <button onclick="NavigationModule.filterTasks('all')" class="px-4 py-2 rounded-lg bg-primary text-white font-semibold">Todas</button>
+                    <button onclick="NavigationModule.filterTasks('pending')" class="px-4 py-2 rounded-lg bg-gray-300 text-gray-700 font-semibold">Pendientes</button>
+                    <button onclick="NavigationModule.filterTasks('completed')" class="px-4 py-2 rounded-lg bg-gray-300 text-gray-700 font-semibold">Completadas</button>
+                </div>
+
+                <div id="tasksList" class="space-y-3">
+                    <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-yellow-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-gray-800">Revisar reportes de ventas</p>
+                                <p class="text-sm text-gray-600">Asignado por: Gerente de Ventas</p>
+                                <p class="text-xs text-gray-500 mt-2">Vence: 10 Oct 2026</p>
+                            </div>
+                            <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Pendiente</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-green-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-gray-800 line-through">Completar formulario de evaluación</p>
+                                <p class="text-sm text-gray-600">Asignado por: Recursos Humanos</p>
+                                <p class="text-xs text-gray-500 mt-2">Completado: 05 Oct 2026</p>
+                            </div>
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Completada</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MI PERFIL SECTION -->
+            <section id="perfil" class="content-section hidden p-8 bg-white m-4 rounded-lg shadow-sm">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">Mi Perfil</h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-gradient-to-br from-primary-light to-primary p-6 rounded-lg text-white text-center shadow-md">
+                        <div class="w-24 h-24 rounded-full bg-white bg-opacity-30 flex items-center justify-center mx-auto mb-4 text-4xl font-bold">MA</div>
+                        <p class="text-2xl font-bold" id="profileName">Miguel Angel Osorio</p>
+                        <p class="text-sm opacity-90">Empleado</p>
+                        <button onclick="RequestsModule.editProfile()" class="mt-4 bg-white text-primary px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all">
+                            Editar Perfil
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Información Personal</h3>
+
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-sm text-gray-600 font-semibold">Email</p>
+                                        <p class="text-gray-800" id="profileEmail">practicantefsy@frutosysemillas.com</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600 font-semibold">Teléfono</p>
+                                        <p class="text-gray-800" id="profilePhone">+57 300 123 4567</p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-sm text-gray-600 font-semibold">Departamento</p>
+                                        <p class="text-gray-800" id="profileDepartment">Sistemas</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600 font-semibold">Posición</p>
+                                        <p class="text-gray-800" id="profilePosition">Pasante de Sistemas</p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-sm text-gray-600 font-semibold">Fecha de Ingreso</p>
+                                        <p class="text-gray-800" id="profileStartDate">01 Sep 2024</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600 font-semibold">Estado</p>
+                                        <p class="text-green-600 font-semibold">Activo</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- LOGOUT MODAL -->
+    <div id="modalLogout" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Confirmar Cierre de Sesión</h2>
+            <p class="text-gray-600 mb-6">¿Estás seguro de que deseas cerrar sesión?</p>
+            <div class="flex gap-4">
+                <button onclick="AuthModule.confirmLogout()" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all">
+                    Cerrar Sesión
+                </button>
+                <button onclick="AuthModule.cancelLogout()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400 transition-all">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../JS/portal-data.js"></script>
+    <script src="../JS/dashboard-empleado.js"></script>
+</body>
+</html>

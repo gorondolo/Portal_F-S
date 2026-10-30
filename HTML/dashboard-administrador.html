@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Administrador | Frutos y Semillas</title>
+    <!--BOOTSTRAP ICONS-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- TAILWIND CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00A8B5',
+                        'primary-light': '#20C4D1',
+                        'primary-dark': '#008C95',
+                        accent: '#8B6F47',
+                        'accent-light': '#A0826D',
+                    },
+                    keyframes: {
+                        slideIn: {
+                            '0%': { transform: 'translateX(-100%)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' }
+                        },
+                        pulse2: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.7' }
+                        }
+                    },
+                    animation: {
+                        slideIn: 'slideIn 0.3s ease-out',
+                        fadeIn: 'fadeIn 0.3s ease-out',
+                        pulse2: 'pulse2 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .content-section {
+            animation: fadeIn 0.4s ease-out;
+        }
+        /* Pestañas del sidebar: color de la empresa al pasar el cursor */
+        #sidebar .menu-item:hover {
+            background-color: #00A8B5;
+        }
+        #sidebar .menu-item:hover span {
+            color: #fff;
+        }
+        #sidebar .menu-item:hover #pendingCount {
+            background-color: #fff;
+            color: #00A8B5;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        .alert-toast {
+            animation: slideIn 0.4s ease-out, fadeIn 0.4s ease-out;
+        }
+        .menu-item-transition {
+            transition: all 0.2s ease;
+        }
+        .table-row-hover {
+            transition: background-color 0.2s ease;
+        }
+        .btn-transition {
+            transition: all 0.2s ease;
+        }
+        .btn-transition:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- HEADER -->
+    <div class="bg-gradient-to-r from-[#00A8B5] to-[#20C4D1] px-8 py-6 shadow-md border-b-4 border-[#008C95]">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-6">
+                <button onclick="toggleSidebar()" class="text-white hover:bg-[#00A8B5] p-2 rounded-lg transition-all text-2xl btn-transition">
+                    <i class="bi bi-list"></i>
+                </button>
+                <img src="../Images/logo.png" alt="Frutos y Semillas" class="h-12 w-auto">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Frutos & Semillas</h1>
+                    <p class="text-white text-sm opacity-90">Panel de Administración</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="text-right text-white">
+                    <p class="font-semibold text-base" id="userName">Carlos Mendez</p>
+                    <p class="text-sm opacity-90" id="userRole">Administrador</p>
+                </div>
+                <div id="userAvatar" class="w-12 h-12 rounded-full bg-[#2A9D8F] text-white flex items-center justify-center font-bold text-lg shadow-md border-4 border-white">CM</div>
+                <button onclick="logout()" class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all duration-300 hover:-translate-y-0.5 shadow-sm btn-transition">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTAINER -->
+    <div class="flex h-screen bg-gray-100" style="height: calc(100vh - 90px);">
+        <!-- SIDEBAR -->
+        <div id="sidebar" class="w-64 bg-white border-r-2 border-gray-200 overflow-y-auto shadow-sm transition-all duration-300" style="transition: margin-left 0.3s ease;">
+            <!-- Close Button Mobile -->
+            <div class="flex justify-between items-center p-4 border-b border-gray-200 lg:hidden">
+                <span class="text-sm font-semibold text-gray-700">Menú</span>
+                <button onclick="toggleSidebar()" class="text-gray-600 hover:text-gray-800">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
+            </div>
+            <div class="p-0">
+                <!-- Menu items with animation -->
+                <div class="menu-item active p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-[#00A8B5] menu-item-transition" onclick="switchSection('dashboard', this)">
+                    <span class="text-2xl"><i class="bi bi-bar-chart-line"></i></span>
+                    <span class="font-medium text-gray-700">Dashboard</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] relative menu-item-transition" onclick="switchSection('pendientes', this)">
+                    <span class="text-2xl"><i class="bi bi-hourglass"></i></span>
+                    <span class="font-medium text-gray-600">Cuentas Pendientes</span>
+                    <span class="ml-auto bg-[#00A8B5] text-white text-xs font-bold px-2 py-1 rounded-full pulse2" id="pendingCount">3</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('permisos', this)">
+                    <span class="text-2xl"><i class="bi bi-calendar-check"></i></span>
+                    <span class="font-medium text-gray-600">Permisos y Vacaciones</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('directorio', this)">
+                    <span class="text-2xl"><i class="bi bi-person-lines-fill"></i></span>
+                    <span class="font-medium text-gray-600">Directorio</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('empleados', this)">
+                    <span class="text-2xl"><i class="bi bi-people"></i></span>
+                    <span class="font-medium text-gray-600">Empleados</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('anuncios', this)">
+                    <span class="text-2xl"><i class="bi bi-megaphone"></i></span>
+                    <span class="font-medium text-gray-600">Anuncios</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('formularios', this)">
+                    <span class="text-2xl"><i class="bi bi-clipboard2-check"></i></span>
+                    <span class="font-medium text-gray-600">Formularios</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('tickets', this)">
+                    <span class="text-2xl"><i class="bi bi-ticket"></i></span>
+                    <span class="font-medium text-gray-600">Tickets/Soporte</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('calendario', this)">
+                    <span class="text-2xl"><i class="bi bi-calendar3"></i></span>
+                    <span class="font-medium text-gray-600">Calendario</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('tareas', this)">
+                    <span class="text-2xl"><i class="bi bi-check-square"></i></span>
+                    <span class="font-medium text-gray-600">Tareas/Proyectos</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('infoempleados', this)">
+                    <span class="text-2xl"><i class="bi bi-file-person"></i></span>
+                    <span class="font-medium text-gray-600">Info Personal</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('reportes', this)">
+                    <span class="text-2xl"><i class="bi bi-newspaper"></i></span>
+                    <span class="font-medium text-gray-600">Reportes</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('auditoria', this)">
+                    <span class="text-2xl"><i class="bi bi-search"></i></span>
+                    <span class="font-medium text-gray-600">Auditoría</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('documentos', this)">
+                    <span class="text-2xl"><i class="bi bi-archive"></i></span>
+                    <span class="font-medium text-gray-600">Documentos</span>
+                </div>
+                <div class="menu-item p-4 cursor-pointer flex items-center gap-4 hover:bg-gray-100 transition-all border-l-4 border-transparent hover:border-[#00A8B5] menu-item-transition" onclick="switchSection('configuracion', this)">
+                    <span class="text-2xl"><i class="bi bi-gear"></i></span>
+                    <span class="font-medium text-gray-600">Configuración</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="flex-1 overflow-y-auto p-8 bg-gray-100">
+            <!-- ===== PLACEHOLDER PARA SECCIONES ===== -->
+            <div id="dashboard" class="content-section active">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Dashboard</h1>
+                <p class="text-gray-600 mb-8">Bienvenido al panel de administración</p>
+                
+                <!-- KPIs con animación -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-gradient-to-br from-[#00D4FF] to-[#00A8D8] rounded-lg p-6 text-white shadow-md card-hover">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-sm opacity-90 font-semibold">Total de Empleados</p>
+                                <p class="text-4xl font-bold mt-2" id="totalEmployees">12</p>
+                            </div>
+                            <i class="bi bi-people text-4xl opacity-40"></i>
+                        </div>
+                        <p class="text-xs opacity-80">Todos activos</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-[#FFD700] to-[#FFC107] rounded-lg p-6 text-white shadow-md card-hover">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-sm opacity-90 font-semibold">Cuentas Pendientes</p>
+                                <p class="text-4xl font-bold mt-2" id="accountsPending">3</p>
+                            </div>
+                            <i class="bi bi-hourglass text-4xl opacity-40"></i>
+                        </div>
+                        <p class="text-xs opacity-80">Requieren aprobación</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-[#5B7FFF] to-[#4A90E2] rounded-lg p-6 text-white shadow-md card-hover">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-sm opacity-90 font-semibold">Solicitudes Pendientes</p>
+                                <p class="text-4xl font-bold mt-2" id="requestsPending">7</p>
+                            </div>
+                            <i class="bi bi-clipboard2-check text-4xl opacity-40"></i>
+                        </div>
+                        <p class="text-xs opacity-80">Esperando revisión</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-[#00E676] to-[#00C853] rounded-lg p-6 text-white shadow-md card-hover">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-sm opacity-90 font-semibold">Tickets Abiertos</p>
+                                <p class="text-4xl font-bold mt-2" id="ticketsOpen">4</p>
+                            </div>
+                            <i class="bi bi-ticket-perforated text-4xl opacity-40"></i>
+                        </div>
+                        <p class="text-xs opacity-80">En proceso</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Últimas Solicitudes</h2>
+                        <div class="space-y-4" id="recentRequests">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Próximas Vacaciones</h2>
+                        <div class="space-y-4" id="upcomingVacations">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Placeholder secciones (simplificado para demostración) -->
+            <div id="pendientes" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Cuentas Pendientes</h1>
+                <p class="text-gray-600 mb-6">Revisa y aprueba nuevas cuentas</p>
+                <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Solicitudes de nuevas cuentas</h2>
+                    <div id="pendingAccountsList" class="space-y-4"></div>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Solicitudes de cambio de contraseña</h2>
+                    <div id="passwordResetsList" class="space-y-4"></div>
+                </div>
+            </div>
+
+                <div id="permisos" class="content-section hidden">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">Permisos y Vacaciones</h1>
+    <p class="text-gray-600 mb-6">Gestión de solicitudes de permisos y vacaciones</p>
+
+    <!-- FILTROS -->
+    <div class="bg-white rounded-lg p-4 shadow-sm mb-6 flex gap-2 flex-wrap">
+        <button onclick="PermissionsModule.filterRequests('pending')" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 font-semibold">
+            <i class="bi bi-hourglass"></i> Pendientes
+        </button>
+        <button onclick="PermissionsModule.filterRequests('approved')" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-semibold">
+            <i class="bi bi-check-circle"></i> Aprobadas
+        </button>
+        <button onclick="PermissionsModule.filterRequests('rejected')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-semibold">
+            <i class="bi bi-x-circle"></i> Rechazadas
+        </button>
+        <button onclick="PermissionsModule.filterRequests('all')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold">
+            <i class="bi bi-list"></i> Todas
+        </button>
+    </div>
+    <div class="alert-modal custom-permission-modal" id="customPermissionModal" style="display: none;">
+        <div class="alert-modal-card">
+            <div class="alert-modal-icon" style="background-color: #00A8B5;"
+                <span class="text-white text-3xl font-bold">?</span>
+        </div>
+        <h2>Tipo de permiso Personalizado</h2>
+        <p>¿Qué tipo de permiso deseas solicitar?</p>
+        <input type="text"
+            id="cutsomPermissionInput"
+            class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none mt-4 mb-4" 
+            placeholder="Ej: Permiso para capacitación, Permiso administrativo..."
+            maxlenght="50">
+
+    <!-- LISTA DE SOLICITUDES -->
+    <div class="bg-white rounded-lg p-6 shadow-sm">
+        <div id="emptyMessage" class="text-center py-8">
+            <p class="text-gray-500 text-lg">No hay solicitudes de permisos</p>
+        </div>
+        <div id="permissionsList" class="space-y-4">
+            <!-- Se llena dinámicamente con JavaScript -->
+        </div>
+    </div>
+</div>
+
+            <div id="directorio" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Directorio</h1>
+                <div class="bg-white rounded-lg p-6 shadow-sm mt-6">
+                    <input type="text" placeholder="Buscar por nombre o departamento..." class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none mb-4" onkeyup="DirectoryModule.render(this.value)">
+                    <div id="directoryList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+            </div>
+
+            <div id="empleados" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Empleados</h1>
+                <div class="bg-white rounded-lg p-6 shadow-sm mt-6">
+                    <button onclick="EmployeesModule.openForm()" class="bg-[#00A8B5] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#20C4D1] btn-transition mb-4">
+                        <i class="bi bi-person-plus"></i> Nuevo empleado
+                    </button>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 text-gray-600 text-sm">
+                                <tr>
+                                    <th class="p-3">Nombre</th>
+                                    <th class="p-3">Correo</th>
+                                    <th class="p-3">Departamento</th>
+                                    <th class="p-3">Rol</th>
+                                    <th class="p-3">Estado</th>
+                                    <th class="p-3">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeesTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="anuncios" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Anuncios</h1>
+                <div class="bg-white rounded-lg p-6 shadow-sm mt-6">
+                    <button onclick="AnnouncementsModule.openForm()" class="bg-[#00A8B5] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#20C4D1] btn-transition mb-4">
+                        <i class="bi bi-plus-circle"></i> Nuevo anuncio
+                    </button>
+                    <div id="announcementsList" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div id="formularios" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Formularios</h1>
+                <div class="bg-white rounded-lg p-6 shadow-sm mt-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Formularios enviados por los empleados</h2>
+                    <div id="formSubmissionsList" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div id="tickets" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Tickets/Soporte</h1>
+                <div class="bg-white rounded-lg p-4 shadow-sm mt-6 mb-6 flex gap-2 flex-wrap">
+                    <button onclick="TicketsModule.render('all')" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold">Todos</button>
+                    <button onclick="TicketsModule.render('open')" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-semibold">Abiertos</button>
+                    <button onclick="TicketsModule.render('in_progress')" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 font-semibold">En proceso</button>
+                    <button onclick="TicketsModule.render('resolved')" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-semibold">Resueltos</button>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm">
+                    <div id="ticketsList" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div id="calendario" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Calendario</h1>
+                <div class="bg-white rounded-lg p-6 shadow-sm mt-6">
+                    <button onclick="CalendarModule.openForm()" class="bg-[#00A8B5] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#20C4D1] btn-transition mb-4">
+                        <i class="bi bi-calendar-plus"></i> Nuevo evento
+                    </button>
+                    <div id="eventsList" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div id="tareas" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Tareas/Proyectos</h1>
+                <div class="bg-white rounded-lg p-6 shadow-sm mt-6">
+                    <button onclick="TasksModule.openForm()" class="bg-[#00A8B5] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#20C4D1] btn-transition mb-4">
+                        <i class="bi bi-plus-circle"></i> Nueva tarea
+                    </button>
+                    <div id="tasksList" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div id="infoempleados" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Info Personal</h1>
+                <div class="bg-white rounded-lg p-6 shadow-sm mt-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Empleado</label>
+                    <select id="infoEmployeeSelect" class="w-full max-w-md p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none mb-6" onchange="InfoModule.show(this.value)"></select>
+                    <div id="infoEmployeeDetail"></div>
+                </div>
+            </div>
+
+            <div id="reportes" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Reportes</h1>
+                <div id="reportsContent" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6"></div>
+            </div>
+
+            <div id="auditoria" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Auditoría</h1>
+                <div class="bg-white rounded-lg p-6 shadow-sm mt-6">
+                    <input type="text" placeholder="Buscar por usuario, acción o detalle..." class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none mb-4" onkeyup="AuditModule.render(this.value)">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 text-gray-600 text-sm">
+                                <tr>
+                                    <th class="p-3">Fecha</th>
+                                    <th class="p-3">Usuario</th>
+                                    <th class="p-3">Acción</th>
+                                    <th class="p-3">Detalle</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="documentos" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Documentos</h1>
+                <div class="bg-white rounded-lg p-6 shadow-sm mt-6">
+                    <button onclick="DocumentsModule.openForm()" class="bg-[#00A8B5] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#20C4D1] btn-transition mb-4">
+                        <i class="bi bi-file-earmark-plus"></i> Nuevo documento
+                    </button>
+                    <div id="documentsList" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div id="configuracion" class="content-section hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Configuración</h1>
+                <form class="bg-white rounded-lg p-6 shadow-sm mt-6 max-w-2xl" onsubmit="SettingsModule.save(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Nombre de la empresa *</label>
+                        <input type="text" id="settingCompanyName" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Correo de soporte</label>
+                        <input type="email" id="settingSupportEmail" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Días de vacaciones por año *</label>
+                        <input type="number" id="settingVacationDays" min="0" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none" required>
+                    </div>
+                    <button type="submit" class="bg-[#00A8B5] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#20C4D1] btn-transition">
+                        <i class="bi bi-save"></i> Guardar configuración
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LOGOUT -->
+    <div id="modalLogout" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-90 shadow-2xl animate-fadeIn">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 text-center">⚠️ Cerrar Sesión</h2>
+            <p class="text-gray-600 text-center mb-6">¿Estás seguro de que deseas cerrar sesión?</p>
+            <div class="flex gap-4">
+                <button onclick="confirmLogout()" class="flex-1 bg-[#00A8B5] text-white py-2 rounded-lg font-semibold hover:bg-[#20C4D1] transition-all btn-transition">Sí, Cerrar</button>
+                <button onclick="cancelLogout()" class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold hover:bg-gray-400 transition-all btn-transition">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../JS/portal-data.js"></script>
+    <script src="../JS/dashboard-administrador.js"></script>
+
+    <!--MODAL DE CONFIRMACIÓN-->
+    <div class="alert-modal" id="alertModal">
+        <div class="alert-modal-card">
+            <div class="alert-modal-icon" id="alertIcon">
+                <i class="bi bi-exclamation-circle"></i>
+            </div>
+            <h2 id="alertTitle">Confirmación</h2>
+            <p id="alertMessage">¿Estás seguro?</p>
+            <div class="alert-modal-buttons">
+                <button type="button" class="btn-cancel" id="alertCancel">Cancelar</button>
+                <button type="button" class="btn-confirm" id="alertConfirm">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!--MODAL DE RESULTADO (exito/error)-->
+    <div class="alert-modal" id="resultModal">
+        <div class="alert-modal-card">
+            <div class="alert-modal-icon" id="resultIcon">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <h2 id="resultTitle">¡Éxito!</h2>
+            <p id="resultMessage">Operación Completada</p>
+            <button type="button" class = "btn-confirm" id="resultClose">Entendido</button>
+        </div>
+    </div>
+    <!--MODAL SIN CONEXIÓN A INTERNET-->
+    <div class="alert-modal offline-modal" id="offlineModal">
+        <div class = "alert-modal-card">
+            <div class = "alert-modal-icon offline">
+                <img src="../Images/Mani_celular (1).png" alt="Sin conexión"
+                    class="offline-avatar">
+            </div>
+            <h2>¡Sin conexión!</h2>
+            <p>Por favor, revisa tu conexión a internet</p>
+            <div class="offline-status">
+                <i class="bi bi-hourglass-split"></i>
+                Esperando conexión...
+            </div>
+        </div>
+    </div>
+</body>
+</html>
